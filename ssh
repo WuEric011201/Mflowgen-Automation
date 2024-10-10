@@ -1,0 +1,9 @@
+for i in $(seq -w 1 19); do
+    if [ "$i" -lt 10 ]; then
+        MACHINE="ece0$i.ece.local.cmu.edu"  # For machines ece001 to ece009
+        ssh-copy-id "tongwu2@$MACHINE"
+    else
+        MACHINE="ece0$i.ece.local.cmu.edu"   # For machines ece010 to ece019
+        ssh-copy-id "tongwu2@$MACHINE"
+    fi
+done
