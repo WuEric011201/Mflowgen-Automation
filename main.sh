@@ -1,4 +1,25 @@
-#!/bin/bash
+# Define the user and the range of machines
+USER="tongwu2"
+MACHINE_PREFIX="ece"
+MACHINE_SUFFIX=("001" "002" "003" "004" "005" "006" "007" "008" "009" "010" "011" "012" "013" "014" "015" "016" "017" "018" "019")
+
+# Loop over each machine
+for SUFFIX in "${MACHINE_SUFFIX[@]}"; do
+    MACHINE="$MACHINE_PREFIX$SUFFIX.ece.local.cmu.edu"
+    
+    echo "Connecting to $MACHINE to kill processes..."
+
+    # Kill all processes for the specified user on the remote machine
+    ssh "$USER@$MACHINE" "pkill -u $USER"
+    
+    wait
+    # Optionally, you can add error checking here
+    if [ $? -eq 0 ]; then
+        echo "Successfully killed processes on $MACHINE."
+    else
+        echo "Failed to kill processes on $MACHINE."
+    fi  
+done
 
 # Base local directory where operations will be performed
 BASE_LOCAL_PATH="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/build"
@@ -45,65 +66,68 @@ for i in $(seq -w 1 19); do
 
     # Step 2: Create a folder with the voltage number as the folder name (xxx)
     NEW_FOLDER_PATH="$BASE_LOCAL_PATH/$VOLTAGE_NUMBER"
-    #echo "Creating folder $NEW_FOLDER_PATH..."
     mkdir -p "$NEW_FOLDER_PATH"
 
     # Path to the 125construct directory
-    CONSTRUCT_DIR="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL"
-    NEW_CONSTRUCT_DIR="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL$VOLTAGE_NUMBER"
-    cp -r "$SOURCE_DIR" "$DEST_DIR"
+CONSTRUCT_DIR="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL"
+NEW_CONSTRUCT_DIR="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL$VOLTAGE_NUMBER"
 
-    cp "$VOLTAGE_FILE" "$BASE_LOCAL_PATH/$VOLTAGE_NUMBER/voltage.txt"
-    cp "$BASE_LOCAL_PATH/clock.txt" "$BASE_LOCAL_PATH/$VOLTAGE_NUMBER/clock.txt"
-    # Apply the sed command to modify the new file
-    sed -i "22s/adk_name = 'asap7'/adk_name = 'asap7$VOLTAGE_NUMBER'/" "$NEW_CONSTRUCT_DIR/construct.py" 
+# Create the new directory if it doesn't exist
+mkdir -p "$NEW_CONSTRUCT_DIR"
+
+    # Check if NEW_CONSTRUCT_DIR already exists
+    if [ -d "$NEW_CONSTRUCT_DIR" ] && [ "$(ls -A $NEW_CONSTRUCT_DIR)" ]; then
+       rm -rf "$NEW_CONSTRUCT_DIR/*"
+    fi
+    cp -r "$CONSTRUCT_DIR/"* "$NEW_CONSTRUCT_DIR/"
+
+# Continue with the rest of your script
+cp "$VOLTAGE_FILE" "$BASE_LOCAL_PATH/$VOLTAGE_NUMBER/voltage.txt"
+cp "$BASE_LOCAL_PATH/clock.txt" "$BASE_LOCAL_PATH/$VOLTAGE_NUMBER/clock.txt"
+echo "Changing the asap voltage"
+
+# Apply the sed command to modify the new file
+sed -i "22s/adk_name = 'asap7'/adk_name = 'asap7$VOLTAGE_NUMBER'/" "$NEW_CONSTRUCT_DIR/construct.py"
 
     # Step 3: Copy the script.sh into the newly created folder (xxx)
     NEW_SCRIPT_PATH="$NEW_FOLDER_PATH/script.sh"
-    #echo "Copying script.sh to $NEW_SCRIPT_PATH..."
     cp "$LOCAL_SCRIPT_PATH" "$NEW_SCRIPT_PATH"
-    
-    #echo "Modifying $NEW_SCRIPT_PATH to set VOLTAGE to $VOLTAGE_NUMBER..."
+    echo "change the script voltage" 
+    # Modify the script to set VOLTAGE to the current voltage number
     sed -i "1s/^VOLTAGE_NUMBER=\".*\"/VOLTAGE_NUMBER=\"$VOLTAGE_NUMBER\"/" "$NEW_SCRIPT_PATH"
+
     # Step 4: Change into the newly created folder (xxx)
-    #echo "Changing directory to $NEW_FOLDER_PATH..."
     cd "$NEW_FOLDER_PATH" || { echo "Failed to change directory to $NEW_FOLDER_PATH"; exit 1; }
 
     # Step 5: Create a 'build' folder inside the (xxx) folder
-    #echo "Creating 'build' folder inside $NEW_FOLDER_PATH..."
     mkdir -p "build"
 
-    # Step 5: Copy the asap7 folder to asap7xxxx
+    # Step 6: Copy the ASAP7 folder to asap7xxxx
     ASAP7_NEW_PATH="/afs/ece.cmu.edu/usr/tongwu2/mflowgen/adks/asap7$VOLTAGE_NUMBER"
-    # echo "Copying ASAP7 folder to $ASAP7_NEW_PATH..."
+
     # Check if the destination directory already exists
     if [ ! -d "$ASAP7_NEW_PATH" ]; then
-    	# If the directory does not exist, copy the ASAP7 folder
-    	cp -r "$ASAP7_BASE_PATH" "$ASAP7_NEW_PATH"
-    	echo "Copied ASAP7 folder to $ASAP7_NEW_PATH."
-  
-    #echo "Updating $LIBRARY_FILE with VOLTAGE_NUMBER..."
-    LIBRARY_FILE="$ASAP7_NEW_PATH/view-standard/stdcells.lib"
-  sed -i -e "47s/voltage_map (VDD, 0.6);/voltage_map (VDD, $VOLTAGE_NUMBER);/" \
-           -e "116s/vih : 0.6;/vih : $VOLTAGE_NUMBER;/" \
-           -e "118s/vimax : 0.6;/vimax : $VOLTAGE_NUMBER;/" \
-           -e "122s/voh : 0.6;/voh : $VOLTAGE_NUMBER;/" \
-           -e "124s/vomax : 0.6;/vomax : $VOLTAGE_NUMBER;/" \
-           -e "70s/voltage : 0.6;/voltage : $VOLTAGE_NUMBER;/" \
-           -e "59s/nom_voltage : 0.7;/nom_voltage : $VOLTAGE_NUMBER;/" "$LIBRARY_FILE"
+        # If the directory does not exist, copy the ASAP7 folder
+        echo "starting to copy"
+	cp -r "$ASAP7_BASE_PATH" "$ASAP7_NEW_PATH"
+        echo "Copied ASAP7 folder to $ASAP7_NEW_PATH."
+ # Updating the LIBRARY_FILE with the voltage number
+        LIBRARY_FILE="$ASAP7_NEW_PATH/view-standard/stdcells.lib"
+       time sed -i -e "47s/voltage_map (VDD, 0.6);/voltage_map (VDD, $VOLTAGE_NUMBER);/" \
+               -e "116s/vih : 0.6;/vih : $VOLTAGE_NUMBER;/" \
+               -e "118s/vimax : 0.6;/vimax : $VOLTAGE_NUMBER;/" \
+               -e "122s/voh : 0.6;/voh : $VOLTAGE_NUMBER;/" \
+               -e "124s/vomax : 0.6;/vomax : $VOLTAGE_NUMBER;/" \
+               -e "70s/voltage : 0.6;/voltage : $VOLTAGE_NUMBER;/" \
+               -e "59s/nom_voltage : 0.7;/nom_voltage : $VOLTAGE_NUMBER;/" "$LIBRARY_FILE"
+ 
+    fi 
+       
+    echo "SSH into $MACHINE" 
+    # Step 7: Run the copied script on the remote machine with sourcing .bashrc
+    ssh "tongwu2@$MACHINE" "source ~/.bashrc; cd $BASE_LOCAL_PATH; : > $BASE_LOCAL_PATH/script_output$VOLTAGE_NUMBER.log; cd ./$VOLTAGE_NUMBER; bash ./script.sh > $BASE_LOCAL_PATH/script_output$VOLTAGE_NUMBER.log 2>&1; echo \$?" &
 
-    else
-    	# If the directory exists, print a message
-    	echo "Directory $ASAP7_NEW_PATH already exists. Skipping copy."
-    fi
-
-
-
-    # Run the copied script on the remote machine with sourcing .bashrc
-
-     ssh "tongwu2@$MACHINE" "source ~/.bashrc; cd $BASE_LOCAL_PATH; : > $BASE_LOCAL_PATH/script_output$VOLTAGE_NUMBER.log; cd ./$VOLTAGE_NUMBER; bash ./script.sh  > $BASE_LOCAL_PATH/script_output$VOLTAGE_NUMBER.log 2>&1; echo \$?" &
 done
 
-
-echo "running in background"
+echo "Running in the background"
 

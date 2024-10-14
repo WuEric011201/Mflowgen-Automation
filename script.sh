@@ -57,9 +57,9 @@ do
     # Run make clean-all
     make clean-all
     wait
-   # Use sed to replace line 22 with the new value
-    sed -i "22s/adk_name = 'asap7'/adk_name = 'asap7$VOLTAGE_NUMBER'/" "$CONSTRUCT_FILE"
-    echo "Line 22 in $CONSTRUCT_FILE has been updated to 'adk_name = 'asap7$VOLTAGE_NUMBER''"
+    # Use sed to replace line 22 with the new value
+    #sed -i "22s/adk_name = 'asap7'/adk_name = 'asap7$VOLTAGE_NUMBER'/" "$CONSTRUCT_FILE"
+    #echo "Line 22 in $CONSTRUCT_FILE has been updated to 'adk_name = 'asap7$VOLTAGE_NUMBER''"
     mflowgen run --design /afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL"$VOLTAGE_NUMBER"/
     wait
 
@@ -71,7 +71,7 @@ do
     if [ $? -eq 0 ]; then
         echo "mflowgen run completed successfully"
         # Rename and move the reports file
-        report_file="reports_${new_clock_period}.html"
+        report_file="run5_${new_clock_period}.html"
         mv ./16-cadence-innovus-signoff/reports/metrics.html "../${report_file}"
         echo "Report moved to ../${report_file}"
     else
@@ -93,3 +93,4 @@ echo "All runs completed."
 rm "$TXT_FILE"
 mv "${TXT_FILE}.bak" "$TXT_FILE"
 
+:
