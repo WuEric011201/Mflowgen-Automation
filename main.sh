@@ -1,3 +1,4 @@
+# Author: Tong Wu 
 # Define the user and the range of machines
 USER="tongwu2"
 MACHINE_PREFIX="ece"

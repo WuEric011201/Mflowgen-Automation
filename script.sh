@@ -1,3 +1,4 @@
+# Author: Tong Wu 
 VOLTAGE_NUMBER="0.3"
 # Path to TXT file containing clock periods (located in the parent folder)
 TXT_FILE="./clock.txt"
@@ -93,4 +94,3 @@ echo "All runs completed."
 rm "$TXT_FILE"
 mv "${TXT_FILE}.bak" "$TXT_FILE"
 
-:
