@@ -1,4 +1,8 @@
-# Author: Tong Wu 
+#!/bin/bash
+# Author: Tong Wu
+# Description: Kill all the processes
+# Date: Oct 14th 2025
+
 # Define the user and the range of machines
 USER="tongwu2"
 MACHINE_PREFIX="ece"

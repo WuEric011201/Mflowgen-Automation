@@ -1,4 +1,9 @@
-# Author: Tong Wu 
+#!/bin/bash
+# Author: Tong Wu
+# Description: Run the mflowgen in a child folder called build
+# Date: Oct 14th 2025
+
+
 VOLTAGE_NUMBER="0.3"
 # Path to TXT file containing clock periods (located in the parent folder)
 TXT_FILE="./clock.txt"
@@ -59,12 +64,10 @@ do
     make clean-all
     wait
     # Use sed to replace line 22 with the new value
-    #sed -i "22s/adk_name = 'asap7'/adk_name = 'asap7$VOLTAGE_NUMBER'/" "$CONSTRUCT_FILE"
-    #echo "Line 22 in $CONSTRUCT_FILE has been updated to 'adk_name = 'asap7$VOLTAGE_NUMBER''"
     mflowgen run --design /afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL"$VOLTAGE_NUMBER"/
     wait
 
-    echo "--------------make 1666666 ------------"
+    echo "--------------make 16 ------------"
     make 16
     echo "---------------------finish ---------------"
     wait
