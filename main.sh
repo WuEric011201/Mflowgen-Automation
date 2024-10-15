@@ -32,8 +32,8 @@ fi
 # Read the voltage numbers into an array
 mapfile -t VOLTAGE_NUMBERS < "$VOLTAGE_FILE"
 
-i = 1
-node = 45 
+i=1
+node=45 
 # Loop over each machine
 for SUFFIX in "${MACHINE_SUFFIX[@]}"; do
     MACHINE="$MACHINE_PREFIX$SUFFIX.ece.local.cmu.edu"
@@ -43,7 +43,6 @@ for SUFFIX in "${MACHINE_SUFFIX[@]}"; do
     # Kill all processes for the specified user on the remote machine
     ssh "$USER@$MACHINE" "pkill -u $USER"
     
-    wait
     # Optionally, you can add error checking here
     if [ $? -eq 0 ]; then
         echo "Successfully killed processes on $MACHINE."

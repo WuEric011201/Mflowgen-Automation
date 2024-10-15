@@ -62,15 +62,12 @@ do
 
     # Run make clean-all
     make clean-all
-    wait
     # Use sed to replace line 22 with the new value
     mflowgen run --design /afs/ece.cmu.edu/usr/tongwu2/mflowgen/designs/125PSL"$VOLTAGE_NUMBER"/
-    wait
 
     echo "--------------make 16 ------------"
     make 16
     echo "---------------------finish ---------------"
-    wait
     # Check if the mflowgen command was successful
     if [ $? -eq 0 ]; then
         echo "mflowgen run completed successfully"
